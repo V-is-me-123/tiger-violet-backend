@@ -6,14 +6,14 @@ import os
 app = Flask(__name__)
 CORS(app)  # Allow requests from frontend
 
-# Stripe secret key from environment variable (safe)
+# Stripe secret key from environment variable
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
-# Map product IDs to Stripe price IDs (replace with your test/live IDs)
+# Map your product IDs to Stripe price IDs
 PRICE_IDS = {
     "1": "prod_Tm0j3IZyhD8JuT",  # Purple Sparkle Stars
-    "2": "price_def456",  # Decorative Lamp
-    "3": "price_ghi789"   # Stylish Planter
+    "2": "price_1N0defXyz987654",  # Decorative Lamp
+    "3": "price_1N0ghiXyz111222"   # Stylish Planter
 }
 
 @app.route("/create-checkout-session", methods=["POST"])
@@ -24,7 +24,7 @@ def create_checkout_session():
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[{
-                "price": PRICE_IDS.get(product_id, "price_abc123"),
+                "price": PRICE_IDS.get(product_id, "price_1N0abcXyz123456"),
                 "quantity": 1
             }],
             mode="payment",
@@ -36,4 +36,5 @@ def create_checkout_session():
         return jsonify(error=str(e)), 400
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Get port from Render
+    app.run(host="0.0.0.0", port=port, debug=True)  # Bind to 0.0.0.0
