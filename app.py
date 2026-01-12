@@ -11,7 +11,7 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 # Map your product IDs to Stripe price IDs
 PRICE_IDS = {
-    "1": "prod_Tm0j3IZyhD8JuT",  # Purple Sparkle Stars
+    "1": "price_1SoSho0HGQpKk5h8UH5Mk3WW",  # Purple Sparkle Stars
     "2": "price_1N0defXyz987654",  # Decorative Lamp
     "3": "price_1N0ghiXyz111222"   # Stylish Planter
 }
@@ -19,12 +19,15 @@ PRICE_IDS = {
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json()
-    product_id = data.get("product_id", "1")
+    product_id = data.get("product_id")
+    if product_id not in PRICE_IDS:
+        return jsonify({"error": "Invalid product"}), 400
+
     try:
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[{
-                "price": PRICE_IDS.get(product_id, "price_1N0abcXyz123456"),
+                "price": PRICE_IDS.[product_id],
                 "quantity": 1
             }],
             mode="payment",
@@ -32,7 +35,9 @@ def create_checkout_session():
             cancel_url="https://tigerviolet.netlify.app/cancel.html",
         )
         return jsonify({"url": checkout_session.url})
+
     except Exception as e:
+        print("STRIPE ERROR:", e) 
         return jsonify(error=str(e)), 400
 
 if __name__ == "__main__":
