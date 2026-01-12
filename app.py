@@ -11,7 +11,7 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 # Map your product IDs to Stripe price IDs
 PRICE_IDS = {
-    "1": "price_1SoSho0HGQpKk5h8UH5Mk3WW",  # Purple Sparkle Stars
+    "1": "price_1SomPd0HGQpKk5h8Dxsdwxoq",  # Purple Sparkle Stars
     "2": "price_1N0defXyz987654",  # Decorative Lamp
     "3": "price_1N0ghiXyz111222"   # Stylish Planter
 }
