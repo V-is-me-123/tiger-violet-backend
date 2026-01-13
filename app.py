@@ -31,8 +31,8 @@ def create_checkout_session():
                 "quantity": 1
             }],
             mode="payment",
-            success_url="https://tigerviolet.netlify.app/success.html",
-            cancel_url="https://tigerviolet.netlify.app/cancel.html",
+            success_url="https://tigerviolet.co.uk/success.html",
+            cancel_url="https://tigerviolet.co.uk/cancel.html",
         )
         return jsonify({"url": checkout_session.url})
 
