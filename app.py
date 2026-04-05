@@ -6,21 +6,11 @@ app = Flask(__name__)
 # Stripe secret key (replace with your own test key)
 stripe.api_key = "STRIPE_SECRET_KEY"
 
-# All products with IDs, names, and prices (in pence)
-PRODUCTS = {
-    "1": {"name": "Elegant Vase", "price": 2499, "currency": "gbp"},
-    "2": {"name": "Decorative Lamp", "price": 1800, "currency": "gbp"},
-    "3": {"name": "Stylish Planter", "price": 1250, "currency": "gbp"},
-    "4": {"name": "Modern Candle Holder", "price": 1500, "currency": "gbp"},
-    "5": {"name": "Glass Bowl", "price": 2000, "currency": "gbp"},
-    "6": {"name": "Decorative Tray", "price": 2250, "currency": "gbp"}
-}
-
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.json
     cart = data.get("cart", [])
-    subtotal = data.get("subtotal", 0)
+    subtotal = float(data.get("subtotal", 0))  # Ensure it's a float
 
     if not cart:
         return jsonify({"error": "Cart is empty"}), 400
