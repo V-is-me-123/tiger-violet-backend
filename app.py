@@ -26,7 +26,9 @@ def create_checkout_session():
         })
 
     # Add shipping if subtotal < 50
-    shipping_cost = 0 if subtotal >= 50 else 499  # £4.99 in pence
+        # TEMP: Force add shipping for testing
+    shipping_cost = 499  # Always add £4.99 for testing
+    print(f"DEBUG: FORCED shipping_cost: {shipping_cost}")  # Debug logging
     print(f"DEBUG: Shipping cost: {shipping_cost}")  # Debug logging
 
     if shipping_cost > 0:
