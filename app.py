@@ -26,21 +26,19 @@ def create_checkout_session():
         })
 
     # Add shipping if subtotal < 50
-        # TEMP: Force add shipping for testing
+    # TEMP: Force add shipping for testing
     shipping_cost = 499  # Always add £4.99 for testing
     print(f"DEBUG: FORCED shipping_cost: {shipping_cost}")  # Debug logging
     print(f"DEBUG: Shipping cost: {shipping_cost}")  # Debug logging
 
     if shipping_cost > 0:
-        print("DEBUG: Adding shipping to line items")  # Debug logging
+        print("DEBUG: Adding shipping using amount/currency")  # Debug logging
+        # Try using amount and currency directly
         line_items.append({
-            "price_data": {
-                "currency": "gbp",
-                "product_data": {
-                    "name": "Shipping",
-                },
-                "unit_amount": shipping_cost,
-            },
+            "amount": shipping_cost,
+            "currency": "gbp",
+            "name": "Standard Shipping",
+            "description": "Delivery within 3-5 business days",
             "quantity": 1,
         })
 
