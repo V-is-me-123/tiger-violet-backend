@@ -12,6 +12,9 @@ def create_checkout_session():
     cart = data.get("cart", [])
     subtotal = float(data.get("subtotal", 0))  # Ensure it's a float
 
+    print(f"DEBUG: Received subtotal: {subtotal}")  # Debug logging
+    print(f"DEBUG: Cart: {cart}")  # Debug logging
+
     if not cart:
         return jsonify({"error": "Cart is empty"}), 400
 
@@ -24,7 +27,10 @@ def create_checkout_session():
 
     # Add shipping if subtotal < 50
     shipping_cost = 0 if subtotal >= 50 else 499  # £4.99 in pence
+    print(f"DEBUG: Shipping cost: {shipping_cost}")  # Debug logging
+
     if shipping_cost > 0:
+        print("DEBUG: Adding shipping to line items")  # Debug logging
         line_items.append({
             "price_data": {
                 "currency": "gbp",
@@ -36,6 +42,8 @@ def create_checkout_session():
             "quantity": 1,
         })
 
+    print(f"DEBUG: Final line items: {line_items}")  # Debug logging
+
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -46,6 +54,7 @@ def create_checkout_session():
         )
         return jsonify({"url": session.url})
     except Exception as e:
+        print(f"DEBUG: Stripe error: {str(e)}")  # Debug logging
         return jsonify(error=str(e)), 500
 
 @app.route("/success")
