@@ -27,7 +27,7 @@ def create_checkout_session():
     ]
 
     # Decide which shipping rate to use
-    shipping_rate_id = shr_1TIsvV0HGQpKk5h8AFJw0TJJ if subtotal >= 50 else shr_1TIsvB0HGQpKk5h8AdLVDDFK
+    shipping_rate_id = "shr_1TIsvV0HGQpKk5h8AFJw0TJJ" if subtotal >= 50 else "shr_1TIsvB0HGQpKk5h8AdLVDDFK"
 
     try:
         session = stripe.checkout.Session.create(
