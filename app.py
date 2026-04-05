@@ -45,10 +45,27 @@ def create_checkout_session():
     print(f"DEBUG: Final line items: {line_items}")  # Debug logging
 
     try:
+        # Create shipping rate first
+        shipping_rate = stripe.shipping_rate.create(
+            display_name="Standard Shipping",
+            type="fixed_amount",
+            fixed_amount={
+                "amount": shipping_cost,
+                "currency": "gbp",
+            },
+            delivery_estimate={
+                "minimum": {"unit": "business_day", "value": 3},
+                "maximum": {"unit": "business_day", "value": 5},
+            },
+        )
+
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=line_items,
             mode="payment",
+            shipping_options=[{
+                "shipping_rate": shipping_rate.id,
+            }],
             success_url="https://tigerviolet.co.uk/success",
             cancel_url="https://tigerviolet.co.uk/cancel",
         )
