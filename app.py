@@ -18,27 +18,30 @@ PRICE_IDS = {
 
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
-    data = request.get_json()
-    product_id = data.get("product_id")
-    if product_id not in PRICE_IDS:
-        return jsonify({"error": "Invalid product"}), 400
+    data = request.json
+    cart = data.get("cart", [])
+
+    if not cart:
+        return jsonify({"error": "Cart is empty"}), 400
+
+    line_items = []
+    for item in cart:
+        line_items.append({
+            "price": item["stripePriceId"],
+            "quantity": item["quantity"]
+        })
 
     try:
-        checkout_session = stripe.checkout.Session.create(
+        session = stripe.checkout.Session.create(
             payment_method_types=["card"],
-            line_items=[{
-                "price": PRICE_IDS[product_id],
-                "quantity": 1
-            }],
+            line_items=line_items,
             mode="payment",
-            success_url="https://tigerviolet.co.uk/success.html",
-            cancel_url="https://tigerviolet.co.uk/cancel.html",
+            success_url="https://YOUR_DOMAIN/success",
+            cancel_url="https://YOUR_DOMAIN/cancel",
         )
-        return jsonify({"url": checkout_session.url})
-
+        return jsonify({"url": session.url})
     except Exception as e:
-        print("STRIPE ERROR:", e) 
-        return jsonify(error=str(e)), 400
+        return jsonify(error=str(e)), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Get port from Render
