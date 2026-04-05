@@ -1,25 +1,26 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import stripe
-import os
 
 app = Flask(__name__)
-CORS(app)  # Allow requests from frontend
 
-# Stripe secret key from environment variable
-stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+# Stripe secret key (replace with your own test key)
+stripe.api_key = "STRIPE_SECRET_KEY"
 
-# Map your product IDs to Stripe price IDs
-PRICE_IDS = {
-    "1": "price_1SomPd0HGQpKk5h8Dxsdwxoq",  # Purple Sparkle Stars
-    "2": "price_1N0defXyz987654",  # Decorative Lamp
-    "3": "price_1N0ghiXyz111222"   # Stylish Planter
+# All products with IDs, names, and prices (in pence)
+PRODUCTS = {
+    "1": {"name": "Elegant Vase", "price": 2499, "currency": "gbp"},
+    "2": {"name": "Decorative Lamp", "price": 1800, "currency": "gbp"},
+    "3": {"name": "Stylish Planter", "price": 1250, "currency": "gbp"},
+    "4": {"name": "Modern Candle Holder", "price": 1500, "currency": "gbp"},
+    "5": {"name": "Glass Bowl", "price": 2000, "currency": "gbp"},
+    "6": {"name": "Decorative Tray", "price": 2250, "currency": "gbp"}
 }
 
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.json
     cart = data.get("cart", [])
+    subtotal = data.get("subtotal", 0)
 
     if not cart:
         return jsonify({"error": "Cart is empty"}), 400
@@ -29,6 +30,20 @@ def create_checkout_session():
         line_items.append({
             "price": item["stripePriceId"],
             "quantity": item["quantity"]
+        })
+
+    # Add shipping if subtotal < 50
+    shipping_cost = 0 if subtotal >= 50 else 499  # £4.99 in pence
+    if shipping_cost > 0:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {
+                    "name": "Shipping",
+                },
+                "unit_amount": shipping_cost,
+            },
+            "quantity": 1,
         })
 
     try:
@@ -43,6 +58,14 @@ def create_checkout_session():
     except Exception as e:
         return jsonify(error=str(e)), 500
 
+@app.route("/success")
+def success():
+    return "<h1>Payment successful! Thank you for your purchase.</h1>"
+
+@app.route("/cancel")
+def cancel():
+    return "<h1>Payment canceled. You can try again.</h1>"
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Get port from Render
-    app.run(host="0.0.0.0", port=port, debug=True)  # Bind to 0.0.0.0
+    app.run(host="127.0.0.1", port=5000)
+
