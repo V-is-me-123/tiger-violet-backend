@@ -4,6 +4,7 @@ import stripe
 import os
 
 app = Flask(__name__)
+CORS(app, origins=["https://tigerviolet.co.uk"])  # allow your website only
 
 # Stripe secret key (replace with your own test/live key)
 stripe.api_key = "STRIPE_SECRET_KEY"
