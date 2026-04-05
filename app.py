@@ -36,8 +36,8 @@ def create_checkout_session():
             payment_method_types=["card"],
             line_items=line_items,
             mode="payment",
-            success_url="https://YOUR_DOMAIN/success",
-            cancel_url="https://YOUR_DOMAIN/cancel",
+            success_url="https://tigerviolet.co.uk/success",
+            cancel_url="https://tigerviolet.co.uk/cancel",
         )
         return jsonify({"url": session.url})
     except Exception as e:
