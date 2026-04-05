@@ -6,8 +6,7 @@ import os
 app = Flask(__name__)
 CORS(app, origins=["https://tigerviolet.co.uk"])  # allow your website only
 
-# Stripe secret key (replace with your own test/live key)
-stripe.api_key = "STRIPE_SECRET_KEY"
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 # Pre-created shipping rate IDs from Stripe dashboard
 STANDARD_SHIPPING_ID = "shr_standard"  # e.g., £4.99
