@@ -22,7 +22,7 @@ def load_products():
 
 def save_products(products):
     with open(PRODUCTS_FILE, "w") as f:
-        json.dump(products, f)
+        json.dump(products, f, indent=2)
 
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
