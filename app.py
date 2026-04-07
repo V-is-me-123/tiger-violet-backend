@@ -76,12 +76,21 @@ def get_products():
 
 @app.route("/add-product", methods=["POST"])
 def add_product():
+    auth = request.headers.get("Authorization")
+
+    if auth != os.environ.get("ADMIN_SECRET"):
+        return jsonify({"error": "Unauthorized"}), 403
+
     data = request.json
     products = load_products()
+
+    # Add timestamp for "New" badge
+    data["createdAt"] = int(time.time() * 1000)
+
     products[data["id"]] = data
     save_products(products)
-    return jsonify({"status": "ok"})
 
+    return jsonify({"status": "ok"})
 @app.route("/remove-product", methods=["POST"])
 def remove_product():
     auth = request.headers.get("Authorization")
