@@ -3,14 +3,26 @@ from flask_cors import CORS
 import stripe
 import os
 
+import json   
+import time   
+
 app = Flask(__name__)
 CORS(app, origins=["https://tigerviolet.co.uk"])  # allow your website only
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
-# Pre-created shipping rate IDs from Stripe dashboard
-STANDARD_SHIPPING_ID = "shr_standard"  # e.g., £4.99
-FREE_SHIPPING_ID = "shr_free"          # £0 shipping
+PRODUCTS_FILE = "products.json"
+
+def load_products():
+    try:
+        with open(PRODUCTS_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_products(products):
+    with open(PRODUCTS_FILE, "w") as f:
+        json.dump(products, f)
 
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
@@ -28,7 +40,7 @@ def create_checkout_session():
     ]
 
     # Decide which shipping rate to use
-    shipping_rate_id = "shr_1TIsvV0HGQpKk5h8AFJw0TJJ" if subtotal >= 50 else "shr_1TIsvB0HGQpKk5h8AdLVDDFK"
+    shipping_rate_id = "shr_1TIsvV0HGQpKk5h8AFJw0TJJ"
 
     try:
         session = stripe.checkout.Session.create(
