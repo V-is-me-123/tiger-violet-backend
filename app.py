@@ -82,14 +82,24 @@ def add_product():
     save_products(products)
     return jsonify({"status": "ok"})
 
-@app.route("/delete-product/<product_id>", methods=["DELETE"])
-def delete_product(product_id):
+@app.route("/remove-product", methods=["POST"])
+def remove_product():
+    auth = request.headers.get("Authorization")
+
+    if auth != os.environ.get("ADMIN_SECRET"):
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.json
+    product_id = data.get("id")
+
     products = load_products()
+
     if product_id in products:
         del products[product_id]
         save_products(products)
-        return jsonify({"status": "ok"})
-    return jsonify({"error": "Product not found"}), 404
+        return jsonify({"success": True})
+
+    return jsonify({"error": "Not found"}), 404
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
