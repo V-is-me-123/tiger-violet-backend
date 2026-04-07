@@ -70,6 +70,31 @@ def cancel():
 def ping():
     return "ok", 200
 
+@app.route("/products", methods=["GET"])
+def get_products():
+    return jsonify(load_products())
+
+@app.route("/add-product", methods=["POST"])
+def add_product():
+    auth = request.headers.get("Authorization")
+
+    if auth != os.environ.get("ADMIN_SECRET"):
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.json
+    products = load_products()
+
+    product_id = data.get("id")
+
+    products[product_id] = {
+        **data,
+        "createdAt": int(time.time() * 1000)
+    }
+
+    save_products(products)
+
+    return jsonify({"success": True})
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
