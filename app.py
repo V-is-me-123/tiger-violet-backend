@@ -74,6 +74,14 @@ def ping():
 def get_products():
     return jsonify(load_products())
 
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.json
+    password = data.get("password")
+    if password == os.environ.get("ADMIN_SECRET"):
+        return jsonify({"ok": True})
+    return jsonify({"ok": False}), 401
+
 @app.route("/add-product", methods=["POST"])
 def add_product():
     auth = request.headers.get("Authorization")
