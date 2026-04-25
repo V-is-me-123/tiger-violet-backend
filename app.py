@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from supabase import create_client
 import stripe
 import os
 
@@ -10,15 +11,16 @@ app = Flask(__name__)
 CORS(app, origins=["https://tigerviolet.co.uk"])  # allow your website only
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 PRODUCTS_FILE = "products.json"
 
 def load_products():
-    try:
-        with open(PRODUCTS_FILE, "r") as f:
-            return json.load(f)
-    except:
-        return {}
+    res = supabase.table("products").select("*").execute()
+    return {p["id"]: p for p in res.data}
 
 def save_products(products):
     with open(PRODUCTS_FILE, "w") as f:
@@ -90,15 +92,14 @@ def add_product():
         return jsonify({"error": "Unauthorized"}), 403
 
     data = request.json
-    products = load_products()
 
     # Add timestamp for "New" badge
     data["createdAt"] = int(time.time() * 1000)
 
-    products[data["id"]] = data
-    save_products(products)
+    supabase.table("products").upsert(data).execute()
 
     return jsonify({"status": "ok"})
+
 @app.route("/remove-product", methods=["POST"])
 def remove_product():
     auth = request.headers.get("Authorization")
@@ -106,17 +107,11 @@ def remove_product():
     if auth != os.environ.get("ADMIN_SECRET"):
         return jsonify({"error": "Unauthorized"}), 403
 
-    data = request.json
-    product_id = data.get("id")
+    product_id = request.json.get("id")
 
-    products = load_products()
+    supabase.table("products").delete().eq("id", product_id).execute()
 
-    if product_id in products:
-        del products[product_id]
-        save_products(products)
-        return jsonify({"success": True})
-
-    return jsonify({"error": "Not found"}), 404
+    return jsonify({"success": True})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
