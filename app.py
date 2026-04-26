@@ -96,6 +96,7 @@ def add_product():
     # Add timestamp for "New" badge
     data["createdAt"] = int(time.time() * 1000)
 
+    print("DATA BEING SENT:", data)
     supabase.table("products").upsert(data).execute()
 
     return jsonify({"status": "ok"})
