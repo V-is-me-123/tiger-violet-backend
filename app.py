@@ -3,9 +3,7 @@ from flask_cors import CORS
 from supabase import create_client
 import stripe
 import os
-
-import json   
-import time   
+import time
 
 app = Flask(__name__)
 CORS(app, origins=["https://tigerviolet.co.uk"])  # allow your website only
@@ -16,15 +14,84 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-PRODUCTS_FILE = "products.json"
+ALLOWED_COLLECTIONS = {"stars", "flowers", "animals", "fruits"}
+ALLOWED_TYPES = {"earrings", "keyrings"}
+ALLOWED_FIELDS = [
+    "id", "name", "price", "image",
+    "stripePriceId", "type", "collection",
+    "color", "parentId", "createdAt", "description"
+]
+
+
+def normalize_collection(value):
+    normalized = str(value or "").strip().lower()
+    return normalized if normalized in ALLOWED_COLLECTIONS else "stars"
+
+
+def normalize_type(value):
+    normalized = str(value or "").strip().lower()
+    return normalized if normalized in ALLOWED_TYPES else "earrings"
+
+
+def normalize_color(value):
+    normalized = str(value or "").strip()
+    if len(normalized) == 7 and normalized.startswith("#"):
+        try:
+            int(normalized[1:], 16)
+            return normalized
+        except ValueError:
+            pass
+    return "#000000"
+
+
+def normalize_price(value):
+    try:
+        price = float(value)
+    except (TypeError, ValueError):
+        return None
+    return price if price >= 0 else None
+
+
+def normalize_product(data, existing_created_at=None):
+    product_id = str(data.get("id") or "").strip()
+    return {
+        "id": product_id,
+        "name": str(data.get("name") or "").strip(),
+        "price": normalize_price(data.get("price")),
+        "image": str(data.get("image") or "").strip(),
+        "stripePriceId": str(data.get("stripePriceId") or "").strip(),
+        "collection": normalize_collection(data.get("collection")),
+        "type": normalize_type(data.get("type")),
+        "color": normalize_color(data.get("color")),
+        "parentId": str(data.get("parentId") or product_id).strip() or product_id,
+        "createdAt": existing_created_at or int(time.time() * 1000),
+        "description": str(data.get("description") or "").strip(),
+    }
+
+
+def validate_product(product, raw_collection, raw_type):
+    if not product["id"]:
+        return "Product ID is required."
+    if not product["id"].replace("-", "").replace("_", "").isalnum():
+        return "Product ID can only contain letters, numbers, hyphens, and underscores."
+    if not product["name"]:
+        return "Product name is required."
+    if product["price"] is None:
+        return "Price must be a valid number."
+    if not product["image"]:
+        return "Image is required."
+    if not product["stripePriceId"]:
+        return "Stripe Price ID is required."
+    if str(raw_collection or "").strip().lower() not in ALLOWED_COLLECTIONS:
+        return "Collection must be one of: stars, flowers, animals, fruits."
+    if str(raw_type or "").strip().lower() not in ALLOWED_TYPES:
+        return "Type must be earrings or keyrings."
+    return None
+
 
 def load_products():
     res = supabase.table("products").select("*").execute()
     return {p["id"]: p for p in res.data}
-
-def save_products(products):
-    with open(PRODUCTS_FILE, "w") as f:
-        json.dump(products, f, indent=2)
 
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
