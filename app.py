@@ -69,7 +69,6 @@ def create_checkout_session():
 
     try:
         session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
             line_items=line_items,
             mode="payment",
             shipping_address_collection={"allowed_countries": ["GB"]},
