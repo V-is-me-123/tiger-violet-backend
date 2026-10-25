@@ -46,6 +46,12 @@ def validate_product(data):
         return "Type must be earrings or keyrings."
     return None
 
+@app.route("/products/<product_id>", methods=["GET"])
+def get_product(product_id):
+    res = supabase.table("products").select("*").eq("id", product_id).limit(1).execute()
+    if not res.data:
+        return jsonify({"error": "Not found"}), 404
+    return jsonify(res.data[0])
 
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
