@@ -4,6 +4,7 @@ from supabase import create_client
 import stripe
 import os
 import time
+import re
 
 app = Flask(__name__)
 CORS(app, origins=["https://tigerviolet.co.uk"])
@@ -118,6 +119,11 @@ def add_product():
     validation_error = validate_product(data)
     if validation_error:
         return jsonify({"error": validation_error}), 400
+
+    color2 = str(data.get("color2") or "").strip()
+    if color2 and not re.fullmatch(r"#[0-9a-fA-F]{6}", color2):
+        return jsonify({"error": "Second colour must be a valid hex colour."}), 400
+    data["color2"] = color2 or None
 
     data["createdAt"] = data.get("createdAt") or int(time.time() * 1000)
     clean_data = {k: v for k, v in data.items() if k in ALLOWED_FIELDS}
