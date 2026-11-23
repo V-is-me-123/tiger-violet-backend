@@ -18,7 +18,7 @@ ALLOWED_TYPES = {"earrings", "keyrings"}
 ALLOWED_FIELDS = [
     "id", "name", "price", "image",
     "stripePriceId", "type", "collection",
-    "color", "parentId", "createdAt", "description"
+    "color", "color2", "parentId", "createdAt", "description"
 ]
 
 def load_products():
